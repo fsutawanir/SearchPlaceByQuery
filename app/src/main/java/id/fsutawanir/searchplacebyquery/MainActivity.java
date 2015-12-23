@@ -1,5 +1,6 @@
 package id.fsutawanir.searchplacebyquery;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,7 +35,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Retrieved from google place API
      */
-    private final static String GOOGLE_PLACE_API_KEY = "AIzaSyCZcwiFUqsnE7FIuT5Mc-VTT9tizbWXF1I";
+    private static final String GOOGLE_PLACE_API_KEY = "AIzaSyCZcwiFUqsnE7FIuT5Mc-VTT9tizbWXF1I";
+
+    public static final String LATITUDE_KEY = "LATITUDE";
+    public static final String LONGITUDE_KEY = "LONGITUDE";
+    public static final String NAME_KEY = "NAME";
 
     private GooglePlaces mGooglePlaces;
     private GpsTracker mGpsTracker;
@@ -114,11 +119,13 @@ public class MainActivity extends AppCompatActivity {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext() ).inflate(R.layout.content_place_row, parent, false);
             ViewHolder vh = new ViewHolder(v);
+            v.setOnClickListener(vh);
             return vh;
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
+            holder.mPlace = mPlaces.get(position);
             holder.mTextView.setText(mPlaces.get(position).getName() );
         }
 
@@ -136,11 +143,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder  implements View.OnClickListener {
+
         public TextView mTextView;
+        public Place mPlace;
+
         public ViewHolder(View v) {
             super(v);
             mTextView = (TextView) v.findViewById(R.id.info_text);
+        }
+
+        @Override
+        public void onClick(View v) {
+            final Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            intent.putExtra(LATITUDE_KEY, mPlace.getLatitude() );
+            intent.putExtra(LONGITUDE_KEY, mPlace.getLongitude() );
+            intent.putExtra(NAME_KEY, mPlace.getName() );
+            startActivity(intent);
         }
     }
 
@@ -158,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
             if(mGpsTracker.getLatitude() == 0 || mGpsTracker.getLongitude() == 0) {
+                mGpsTracker.getLocation();
                 return null;
             }
 
